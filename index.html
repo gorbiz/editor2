@@ -1,47 +1,120 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JS Code Editor and Preview</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <style>
-        body { margin: 0; height: 100vh; display: flex; flex-direction: column; }
-        #editor { height: 50vh; }
-        #preview { height: 50vh; }
-        @media (orientation: landscape) {
-            body { flex-direction: row; }
-            #editor, #preview { height: 100vh; width: 50vw; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS Code Editor and Preview</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #editor {
+      height: 100vh;
+    }
+    .CodeMirror {
+      height: 100%;
+    }
+    
+    #preview {
+      height: 50vh;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    @media (orientation: landscape) {
+      body {
+        flex-direction: row;
+      }
+
+      #editor,
+      #preview {
+        height: 100vh;
+        width: 50vw;
+      }
+    }
+  </style>
+
+  <script id="temp-raw">class HelloWorldComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+
+    // Inline CSS
+    const style = document.createElement('style');
+    style.textContent = `
+    p {
+      color: blue;
+      font-size: 20px;
+    }
+    `;
+
+    // Inline HTML
+    const p = document.createElement('p');
+    p.textContent = 'Hello, World!';
+
+    this.shadowRoot.append(style, p);
+  }
+}
+
+customElements.define('hello-world-tag', HelloWorldComponent);
+</script>
+
 </head>
+
 <body>
-    <textarea id="code"></textarea>
-    <iframe id="preview"></iframe>
+  <textarea id="code"></textarea>
+  <div id="preview"><hello-world-tag class="custom-comp"></hello-world-tag></div>
+  <!-- <iframe id="preview"></iframe> -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-    <script>
-        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-            lineNumbers: true,
-            mode: "javascript"
-        });
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+  <script>
+    // https://chat.openai.com/c/8db22c42-1cca-48d7-bf26-215ded347f8e <-- consider building on this
 
-        editor.on("change", function() {
-            updatePreview();
-        });
+    let version = 0
 
-        function updatePreview() {
-            var previewFrame = document.getElementById("preview");
-            var preview =  previewFrame.contentDocument ||  previewFrame.contentWindow.document;
-            preview.open();
-            preview.write(editor.getValue());
-            preview.close();
-        }
+    const removeExistingComponents = (tagName) => {
+      // const existingComponents = document.querySelectorAll(tagName)
+      const existingComponents = document.querySelectorAll('.custom-comp')
+      existingComponents.forEach((component) => {
+        component.remove()
+      })
+    }
 
-        // Initial code in the editor
-        editor.setValue("console.log('Hello, World!');");
-    </script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+      lineNumbers: true,
+      mode: "javascript"
+    });
+
+    editor.on("change", function () {
+      updatePreview();
+    });
+
+    function updatePreview() {
+      removeExistingComponents('hello-world')
+      let code = editor.getValue()
+      const tagName = `hello-world-${version++}`
+      code = code.replace('hello-world-tag', tagName)
+      eval(code)
+
+      document.querySelector('#preview').innerHTML = `<${tagName} class="custom-comp"></${tagName}>`
+
+      // var previewFrame = document.getElementById("preview");
+      // var preview = previewFrame.contentDocument || previewFrame.contentWindow.document;
+      // preview.open();
+      // preview.write(editor.getValue());
+      // preview.close();
+    }
+
+    // Initial code in the editor
+    // editor.setValue("console.log('Hello, World!');");
+    editor.setValue(document.getElementById("temp-raw").innerHTML)
+  </script>
 </body>
+
 </html>
