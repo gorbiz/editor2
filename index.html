@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Code Editor and Preview</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <style>
+        body { margin: 0; height: 100vh; display: flex; flex-direction: column; }
+        #editor { height: 50vh; }
+        #preview { height: 50vh; }
+        @media (orientation: landscape) {
+            body { flex-direction: row; }
+            #editor, #preview { height: 100vh; width: 50vw; }
+        }
+    </style>
+</head>
+<body>
+    <textarea id="code"></textarea>
+    <iframe id="preview"></iframe>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script>
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            mode: "javascript"
+        });
+
+        editor.on("change", function() {
+            updatePreview();
+        });
+
+        function updatePreview() {
+            var previewFrame = document.getElementById("preview");
+            var preview =  previewFrame.contentDocument ||  previewFrame.contentWindow.document;
+            preview.open();
+            preview.write(editor.getValue());
+            preview.close();
+        }
+
+        // Initial code in the editor
+        editor.setValue("console.log('Hello, World!');");
+    </script>
+</body>
+</html>
